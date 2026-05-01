@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import crypto from 'crypto';
-import { Resend } from 'resend';
+
+
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -129,23 +130,29 @@ export async function POST(req: Request) {
       );
     }
 
-    const resend = new Resend(process.env.RESEND_API_KEY);
+    const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
     // 9️⃣ Send email
-    const { error: emailError } = await resend.emails.send({
-      from: 'Access Portal <onboarding@resend.dev>',
-      to: normalizedEmail,
-      subject: 'Your Secure Access Code',
-      html: `
-        <div style="font-family: Arial; padding:20px;">
-          <h2>Your secure access code</h2>
-          <p>Hello ${normalizedName ?? ''},</p>
-          <p>Your verification code is:</p>
-          <h1 style="letter-spacing:6px;">${rawCode}</h1>
-          <p>This code expires in 48 hours.</p>
-        </div>
-      `,
-    });
+    const { error: emailError } = await transporter.sendMail({
+  from: `"AI Market Dashboard" <${process.env.EMAIL_USER}>`,
+  to: normalizedEmail,
+  subject: "Your Secure Access Code",
+  html: `
+    <div style="font-family: Arial; padding:20px;">
+      <h2>Your secure access code</h2>
+      <p>Hello ${normalizedName ?? ''},</p>
+      <p>Your verification code is:</p>
+      <h1 style="letter-spacing:6px;">${rawCode}</h1>
+      <p>This code expires in 48 hours.</p>
+    </div>
+  `,
+});
 
     if (emailError) {
       console.error('Error sending email:', emailError);
