@@ -682,8 +682,8 @@ export default function Dashboard() {
           <button
             onClick={() => setView("market")}
             className={`px-6 py-2 rounded-xl transition ${view === "market"
-                ? "bg-blue-600 shadow-lg"
-                : "bg-gray-700 hover:bg-gray-600"
+              ? "bg-blue-600 shadow-lg"
+              : "bg-gray-700 hover:bg-gray-600"
               }`}
           >
             Market Signals
@@ -692,8 +692,8 @@ export default function Dashboard() {
           <button
             onClick={() => setView("analytics")}
             className={`px-6 py-2 rounded-xl transition ${view === "analytics"
-                ? "bg-green-600 shadow-lg"
-                : "bg-gray-700 hover:bg-gray-600"
+              ? "bg-green-600 shadow-lg"
+              : "bg-gray-700 hover:bg-gray-600"
               }`}
           >
             Tool Analytics
@@ -933,19 +933,19 @@ export default function Dashboard() {
                             <div className="w-24 h-1.5 bg-slate-700 rounded-full overflow-hidden">
                               <div
                                 className={`h-full rounded-full transition-all ${strategicInsight.confidence_label === "High Confidence"
-                                    ? "bg-green-400"
-                                    : strategicInsight.confidence_label === "Moderate Confidence"
-                                      ? "bg-yellow-400"
-                                      : "bg-red-400"
+                                  ? "bg-green-400"
+                                  : strategicInsight.confidence_label === "Moderate Confidence"
+                                    ? "bg-yellow-400"
+                                    : "bg-red-400"
                                   }`}
                                 style={{ width: `${strategicInsight.confidence_level}%` }}
                               />
                             </div>
                             <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${strategicInsight.confidence_label === "High Confidence"
-                                ? "bg-green-900/50 text-green-300 border-green-700"
-                                : strategicInsight.confidence_label === "Moderate Confidence"
-                                  ? "bg-yellow-900/50 text-yellow-300 border-yellow-700"
-                                  : "bg-red-900/50 text-red-300 border-red-700"
+                              ? "bg-green-900/50 text-green-300 border-green-700"
+                              : strategicInsight.confidence_label === "Moderate Confidence"
+                                ? "bg-yellow-900/50 text-yellow-300 border-yellow-700"
+                                : "bg-red-900/50 text-red-300 border-red-700"
                               }`}>
                               {strategicInsight.confidence_label} · {strategicInsight.confidence_level}/100
                             </span>
@@ -991,9 +991,9 @@ export default function Dashboard() {
                   Year: {calendarYear}
                 </div>
               </div>
-              <CalendarHeatmap 
-                year={calendarYear} 
-                data={calendarData} 
+              <CalendarHeatmap
+                year={calendarYear}
+                data={calendarData}
                 height={280}
               />
             </div>
@@ -1068,10 +1068,10 @@ export default function Dashboard() {
                     </div>
                     <div className="flex items-center gap-3">
                       <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${assistantResponse.confidence === "High"
-                          ? "bg-green-900/50 text-green-300 border-green-700"
-                          : assistantResponse.confidence === "Medium"
-                            ? "bg-yellow-900/50 text-yellow-300 border-yellow-700"
-                            : "bg-red-900/50 text-red-300 border-red-700"
+                        ? "bg-green-900/50 text-green-300 border-green-700"
+                        : assistantResponse.confidence === "Medium"
+                          ? "bg-yellow-900/50 text-yellow-300 border-yellow-700"
+                          : "bg-red-900/50 text-red-300 border-red-700"
                         }`}>
                         {assistantResponse.confidence} Confidence
                       </span>
