@@ -2,12 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
+import { transformCalendarData, extractLatestYear } from "@/lib/charts/transformCalendarData";
 
 const ReactECharts = dynamic(() => import("echarts-for-react"), {
   ssr: false,
 });
 
-const CalendarHeatmap = dynamic(() => import("@/components/charts/CalendarHeatmap"), {
+const CalendarHeatmap = dynamic(() => import("@/components/charts").then(mod => mod.CalendarHeatmap), {
   ssr: false,
 });
 
@@ -606,7 +607,30 @@ export default function Dashboard() {
 
   const option = {
     tooltip: {
-      trigger: "axis",
+      trigger: "item",
+      backgroundColor: "rgba(17, 24, 39, 0.95)",
+      borderColor: "#4b5563",
+      textStyle: { color: "#fff" },
+      formatter: (params: any) => {
+        const { seriesName, name, value, marker } = params;
+        return `
+          <div style="font-family: sans-serif; padding: 4px;">
+            <div style="display: flex; align-items: center; gap: 8px; font-weight: bold; margin-bottom: 8px; border-bottom: 1px solid #374151; padding-bottom: 4px;">
+              ${marker} <span>${seriesName}</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <div style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px;">
+                <span style="color: #9ca3af;">Period:</span>
+                <span style="font-weight: 500;">${name}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; gap: 16px; font-size: 12px;">
+                <span style="color: #9ca3af;">Score:</span>
+                <span style="font-weight: bold; color: #60a5fa;">${value}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
     },
     legend: {
       data: legendData,
@@ -639,27 +663,9 @@ export default function Dashboard() {
     series: finalSeries,
   };
 
-  // 🅰️ CALENDAR HEATMAP DATA (Aggregated Interest by Date)
-  const calendarData = useMemo(() => {
-    const dailyMap: Record<string, number> = {};
-    filteredData.forEach((item) => {
-      const date = item.week_start;
-      if (date) {
-        // Simple aggregation: sum of interest for all keywords on that date
-        dailyMap[date] = (dailyMap[date] || 0) + Number(item.interest);
-      }
-    });
-    return Object.entries(dailyMap).map(([date, val]) => [date, val] as [string, number]);
-  }, [filteredData]);
-
-  const calendarYear = useMemo(() => {
-    if (filteredData.length > 0) {
-      // Find the most recent year in the data
-      const years = filteredData.map(d => new Date(d.week_start).getFullYear()).filter(y => !isNaN(y));
-      return years.length > 0 ? Math.max(...years) : new Date().getFullYear();
-    }
-    return new Date().getFullYear();
-  }, [filteredData]);
+  // 🅰️ MODULAR CALENDAR DATA (Using transform layer)
+  const calendarData = useMemo(() => transformCalendarData(filteredData), [filteredData]);
+  const calendarYear = useMemo(() => extractLatestYear(filteredData), [filteredData]);
 
   const getRegionName = () => {
     if (selectedRegion === "mx") return "Mexico";

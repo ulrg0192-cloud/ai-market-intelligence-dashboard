@@ -1,14 +1,8 @@
 "use client";
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import ReactECharts from 'echarts-for-react';
-
-interface CalendarHeatmapProps {
-  year: string | number;
-  data: [string, number][];
-  title?: string;
-  height?: number | string;
-}
+import { CalendarHeatmapProps } from '@/lib/charts/chartTypes';
 
 /**
  * CalendarHeatmap component using Apache ECharts.
@@ -20,6 +14,15 @@ const CalendarHeatmap: React.FC<CalendarHeatmapProps> = ({
   title,
   height = 280 
 }) => {
+  // Transform domain data to ECharts specific format: [string, number][]
+  const echartsData = useMemo(() => {
+    return data.map(item => [item.date, item.value]);
+  }, [data]);
+
+  const maxVal = useMemo(() => {
+    return data.length > 0 ? Math.max(...data.map(d => d.value)) : 100;
+  }, [data]);
+
   // ECharts configuration
   const option = {
     backgroundColor: 'transparent',
@@ -44,7 +47,7 @@ const CalendarHeatmap: React.FC<CalendarHeatmapProps> = ({
     },
     visualMap: {
       min: 0,
-      max: Math.max(...(data.length > 0 ? data.map(d => d[1]) : [100])),
+      max: maxVal,
       type: 'piecewise',
       orient: 'horizontal',
       left: 'center',
@@ -95,7 +98,7 @@ const CalendarHeatmap: React.FC<CalendarHeatmapProps> = ({
     series: [{
       type: 'heatmap',
       coordinateSystem: 'calendar',
-      data: data,
+      data: echartsData,
       emphasis: {
         itemStyle: {
           shadowBlur: 10,
