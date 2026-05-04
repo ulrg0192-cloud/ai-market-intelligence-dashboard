@@ -7,6 +7,10 @@ const ReactECharts = dynamic(() => import("echarts-for-react"), {
   ssr: false,
 });
 
+const CalendarHeatmap = dynamic(() => import("@/components/charts/CalendarHeatmap"), {
+  ssr: false,
+});
+
 export default function Dashboard() {
   const [view, setView] = useState<"market" | "analytics">("market");
   const [data, setData] = useState<any[]>([]);
@@ -635,79 +639,27 @@ export default function Dashboard() {
     series: finalSeries,
   };
 
-  // 🅰️ HEATMAP SEMANAL (Mantiene TODAS las keywords según filtros de región/fecha)
-  const heatmapUniqueKeywords = Object.keys(grouped);
-
-  const heatmapData = useMemo(() => {
-    const data: [number, number, number][] = [];
-    heatmapUniqueKeywords.forEach((keyword, yIndex) => {
-      uniqueDates.forEach((date, xIndex) => {
-        const found = grouped[keyword].find((item: any) => item.week_start === date);
-        const interest = found ? found.interest : 0;
-        data.push([xIndex, yIndex, interest]);
-      });
+  // 🅰️ CALENDAR HEATMAP DATA (Aggregated Interest by Date)
+  const calendarData = useMemo(() => {
+    const dailyMap: Record<string, number> = {};
+    filteredData.forEach((item) => {
+      const date = item.week_start;
+      if (date) {
+        // Simple aggregation: sum of interest for all keywords on that date
+        dailyMap[date] = (dailyMap[date] || 0) + Number(item.interest);
+      }
     });
-    return data;
-  }, [heatmapUniqueKeywords, uniqueDates, grouped]);
+    return Object.entries(dailyMap).map(([date, val]) => [date, val] as [string, number]);
+  }, [filteredData]);
 
-  const heatmapOption = {
-    tooltip: {
-      position: 'top',
-      trigger: "item",
-      formatter: (params: any) => {
-        return `${uniqueDates[params.value[0]]}<br/>${heatmapUniqueKeywords[params.value[1]]}: ${params.value[2]}`;
-      }
-    },
-    grid: {
-      top: '10%',
-      bottom: '15%',
-      left: '15%',
-      right: '5%',
-    },
-    xAxis: {
-      type: 'category',
-      data: uniqueDates,
-      splitArea: {
-        show: true
-      },
-      axisLabel: { color: "#fff" },
-    },
-    yAxis: {
-      type: 'category',
-      data: heatmapUniqueKeywords,
-      splitArea: {
-        show: true
-      },
-      axisLabel: { color: "#fff" },
-    },
-    visualMap: {
-      min: 0,
-      max: Math.max(...heatmapData.map(d => d[2]), 100),
-      calculable: true,
-      orient: 'horizontal',
-      left: 'center',
-      bottom: '0%',
-      inRange: {
-        color: ['#1e3a8a', '#3b82f6', '#ef4444']
-      },
-      textStyle: { color: "#fff" }
-    },
-    series: [{
-      name: 'Interest Heatmap',
-      type: 'heatmap',
-      data: heatmapData,
-      label: {
-        show: true,
-        color: '#fff'
-      },
-      emphasis: {
-        itemStyle: {
-          shadowBlur: 10,
-          shadowColor: 'rgba(0, 0, 0, 0.5)'
-        }
-      }
-    }]
-  };
+  const calendarYear = useMemo(() => {
+    if (filteredData.length > 0) {
+      // Find the most recent year in the data
+      const years = filteredData.map(d => new Date(d.week_start).getFullYear()).filter(y => !isNaN(y));
+      return years.length > 0 ? Math.max(...years) : new Date().getFullYear();
+    }
+    return new Date().getFullYear();
+  }, [filteredData]);
 
   const getRegionName = () => {
     if (selectedRegion === "mx") return "Mexico";
@@ -1024,12 +976,20 @@ export default function Dashboard() {
               <ReactECharts option={option} style={{ height: 400 }} />
             </div>
 
-            {/* HEATMAP CONTAINER */}
-            <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl">
-              <h2 className="text-2xl font-semibold mb-6">
-                Interest Intensity Map
-              </h2>
-              <ReactECharts option={heatmapOption} style={{ height: 400 }} />
+            <div className="bg-gray-800 rounded-2xl p-6 shadow-2xl border border-gray-700/50">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-semibold text-white">
+                  Market Interest Intensity
+                </h2>
+                <div className="text-xs text-gray-400 font-mono">
+                  Year: {calendarYear}
+                </div>
+              </div>
+              <CalendarHeatmap 
+                year={calendarYear} 
+                data={calendarData} 
+                height={280}
+              />
             </div>
 
             {/* 🤖 STRATEGIC AI ASSISTANT */}
