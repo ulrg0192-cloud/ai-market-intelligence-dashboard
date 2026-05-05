@@ -607,7 +607,7 @@ export default function Dashboard() {
 
   const option = {
     tooltip: {
-      trigger: "item",
+      trigger: "axis",
       backgroundColor: "rgba(17, 24, 39, 0.95)",
       borderColor: "#4b5563",
       textStyle: { color: "#fff" },
